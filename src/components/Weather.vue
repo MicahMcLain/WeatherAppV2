@@ -1,202 +1,226 @@
 <template>
-    <div class="container p-0">
-        <div class="d-flex">
-            <div class="card main-div w-100">
+  <div class="container p-0">
+    <div class="d-flex">
+      <div class="card main-div w-100">
+        <div class="p-3">
+          <h2 class="mb-1 day">Today</h2>
+          <p class="text-light date mb-0">{{ date }}</p>
+          <small>{{ time }}</small>
+          <h2 class="place">
+            <i class="fa fa-location"
+              >{{ name }} <small>{{ country }}</small></i
+            >
+          </h2>
+          <div class="temp">
+            <h1 class="weather-temp">{{ temperature }}&deg;F</h1>
+            <h2 class="text-light">{{ description }}<img :src="iconUrl" /></h2>
+          </div>
+        </div>
+      </div>
 
-                <div class="p-3">
-                    <h2 class="mb-1 day">Today</h2>
-                    <p class="text-light date mb-0">{{ date }}</p>
-                    <small>{{ time }}</small>
-                    <h2 class="place"><i class="fa fa-location">{{ name }} <small>{{ country }}</small></i></h2>
-                    <div class="temp">
-                        <h1 class="weather-temp">{{ temperature }}&deg;F</h1>
-                        <h2 class="text-light">{{ description }}<img :src="iconUrl" /></h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card card-2 w-100">
-                <table class="m-4">
-                    <tbody>
-                        <!-- <tr>
+      <div class="card card-2 w-100">
+        <table class="m-4">
+          <tbody>
+            <!-- <tr>
                             <th v-if="sea_level > 0">Sea Level</th>
                             <td v-else>Null</td>
                             <td>{{ sea_level }}</td>
                         </tr> -->
-                        <tr>
-                            <th>Humidity</th>
-                            <td>{{ humidity }}</td>
-                        </tr>
-                        <tr>
-                            <th>Wind</th>
-                            <td>{{ wind }}mph</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <tr>
+              <th>Humidity</th>
+              <td>{{ humidity }}%</td>
+            </tr>
+            <tr>
+              <th>Wind</th>
+              <td>{{ wind }}mph</td>
+            </tr>
+          </tbody>
+        </table>
 
-                <DailyWeather :cityName="cityName"></DailyWeather>
+        <DailyWeather :cityName="cityName"></DailyWeather>
 
-                <div id="div_Form" class="d-flex m-3 justify-content-center">
-                    <form action="">
-                        <input type="button" value="Change Location" @click="changeLocation"
-                            class="btn change-btn btn-primary">
-                    </form>
-                </div>
-            </div>
+        <div id="div_Form" class="d-flex m-3 justify-content-center">
+          <form action="">
+            <input
+              type="button"
+              value="Change Location"
+              @click="changeLocation"
+              class="btn change-btn btn-primary"
+            />
+          </form>
         </div>
-
+      </div>
     </div>
+  </div>
 </template>
   
 <script>
-import axios from 'axios'
-import DailyWeather from './DailyWeather.vue'
-export default (await import('vue')).defineComponent({
-    name: 'myWeather',
-    components: {
-        DailyWeather,
+import axios from "axios";
+import DailyWeather from "./DailyWeather.vue";
+export default (await import("vue")).defineComponent({
+  name: "myWeather",
+  components: {
+    DailyWeather,
+  },
+  props: {
+    city: String,
+  },
+  data() {
+    return {
+      cityName: this.city,
+      temperature: null,
+      description: null,
+      iconUrl: null,
+      date: null,
+      time: null,
+      name: null,
+      // sea_level: null,
+      wind: null,
+      humidity: null,
+      country: null,
+      months: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sept",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+    };
+  },
+  methods: {
+    changeLocation() {
+      window.location.reload();
     },
-    props: {
-        city: String,
-    },
-    data() {
-        return {
-            cityName: this.city,
-            temperature: null,
-            description: null,
-            iconUrl: null,
-            date: null,
-            time: null,
-            name: null,
-            // sea_level: null,
-            wind: null,
-            humidity: null,
-            country: null,
-            months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
-        }
-    },
-    methods: {
-        changeLocation() {
-            window.location.reload();
-        }
-    },
-    async created() {
-        const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=imperial&appid=1eb74972803cff0819b54ac1d0d0d1a4`)
-        const weatherData = response.data;
-        this.temperature = Math.round(weatherData.main.temp);
-        this.description = weatherData.weather[0].description;
-        this.name = weatherData.name;
-        this.wind = Math.round(weatherData.wind.speed);
-        // this.sea_level = weatherData.main.sea_level;
-        this.country = weatherData.sys.country;
-        this.humidity = weatherData.main.humidity;
+  },
+  async created() {
+    const response = await axios.get(
+      `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=imperial&appid=1eb74972803cff0819b54ac1d0d0d1a4`
+    );
+    const weatherData = response.data;
+    this.temperature = Math.round(weatherData.main.temp);
+    this.description = weatherData.weather[0].description;
+    this.name = weatherData.name;
+    this.wind = Math.round(weatherData.wind.speed);
+    // this.sea_level = weatherData.main.sea_level;
+    this.country = weatherData.sys.country;
+    this.humidity = weatherData.main.humidity;
 
-        this.iconUrl = `https://api.openweathermap.org/img/w/${weatherData.weather[0].icon}.png`
-        const day = new Date();
-        this.date = this.months[day.getMonth()] + '/' + day.getDate() + '/' + day.getFullYear();
-        this.time = day.getHours() + ':' + day.getMinutes() + ':' + day.getSeconds();
-    }
-})
+    this.iconUrl = `https://api.openweathermap.org/img/w/${weatherData.weather[0].icon}.png`;
+    const day = new Date();
+    this.date =
+      this.months[day.getMonth()] +
+      "/" +
+      day.getDate() +
+      "/" +
+      day.getFullYear();
+    this.time =
+      day.getHours() + ":" + day.getMinutes() + ":" + day.getSeconds();
+  },
+});
 </script>
   
-<style>
+<style scoped>
 .weather-temp {
-    margin: 0px;
-    font-weight: 700;
-    font-size: 4em;
+  margin: 0px;
+  font-weight: 700;
+  font-size: 4em;
 }
 
 h2.mb-1.day {
-    font-size: 3rem;
-    font-weight: 400;
+  font-size: 3rem;
+  font-weight: 400;
 }
 
 .main-div {
-    outline: 11px red;
-    border-radius: 20px;
-    color: #fff;
-    background-image: url("https://images.unsplash.com/photo-1516490981167-dc990a242afe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80");
-    background-size: cover;
-    background-position: center;
-    background-blend-mode: overlay;
-    background-color: #00000090;
-    background-repeat: no-repeat;
+  border-radius: 20px;
+  color: #fff;
+  background-image: url("https://images.unsplash.com/photo-1516490981167-dc990a242afe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80");
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+  background-color: #00000090;
+  background-repeat: no-repeat;
 }
 
 .temp {
-    position: absolute;
-    bottom: 0;
+  position: absolute;
+  bottom: 0;
 }
 
 .main-div:hover {
-    transform: scale(1.1);
-    transition: transform 0.5s ease;
-    z-index: 1;
+  transform: scale(1.1);
+  transition: transform 0.5s ease;
+  z-index: 1;
 }
 
 .card-2 {
-    background-color: #212730;
-    border-radius: 20px;
+  background-color: #212730;
+  border-radius: 20px;
 }
 
-
 .card-details {
-    margin-left: 19px;
+  margin-left: 19px;
 }
 
 .h1_left {
-    position: absolute;
-    bottom: 25px;
-    left: 16px;
-    font-size: 3vw;
-    line-height: 1.2;
+  position: absolute;
+  bottom: 25px;
+  left: 16px;
+  font-size: 3vw;
+  line-height: 1.2;
 }
 
 .h3_left {
-    position: absolute;
-    left: 16px;
-    font-size: 2vw;
-    line-height: 0.5;
+  position: absolute;
+  left: 16px;
+  font-size: 2vw;
+  line-height: 0.5;
 }
 
 .h3_left small {
-    font-size: 1rem;
+  font-size: 1rem;
 }
 
 table {
-    position: relative;
-    left: 15px;
-    border-collapse: separate;
-    border-spacing: 15px;
-    width: 85%;
-    text-align: left;
-    max-width: 600px;
-    margin: 0 auto;
-
+  position: relative;
+  left: 15px;
+  border-collapse: separate;
+  border-spacing: 15px;
+  width: 85%;
+  text-align: left;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 th,
 td {
-    font-size: 18px;
-    color: #fff;
+  font-size: 18px;
+  color: #fff;
 }
 
 td {
-    text-align: right;
+  text-align: right;
 }
 
 table,
 tr:hover {
-    color: red;
+  color: red;
 }
 
 .change-btn {
-    background-image: linear-gradient(to right, #4b4186, #1b2238);
+  background-image: linear-gradient(to right, #4b4186, #1b2238);
 }
 
 .change-btn:hover {
-    transform: scale(0.9);
-    transition: transform 0.1s ease;
+  transform: scale(0.9);
+  transition: transform 0.1s ease;
 }
 </style>
   
